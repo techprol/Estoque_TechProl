@@ -1,0 +1,35 @@
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.styled-table thead {
+    background: #0d6efd;
+    color: white;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+.styled-table tbody tr:nth-child(odd) {
+    background: #fafafa;
+}
+
+.styled-table tbody tr:hover {
+    background: #eef5ff;
+    transition: 0.2s;
+}
+
+.entrada {
+    color: #1b8a20;
+    font-weight: bold;
+}
+
+.saida {
+    color: #c02020;
+    font-weight: bold;
+}
