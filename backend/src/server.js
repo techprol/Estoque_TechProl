@@ -10,7 +10,7 @@ import itemsRouter from './routes/items.js';
 import movementsRouter from './routes/movements.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+//const __dirname = path.dirname(__filename);
 
 async function openDb() {
   return open({
@@ -119,3 +119,58 @@ app.get('/', (req, res) => res.json({ ok: true }));
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Backend rodando na porta ${PORT}`));
+
+// ===== DEBUG TEMPORÁRIO =====
+
+// garantir __dirname no modo ES module
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// middleware para validar token
+function checkDebugToken(req, res, next) {
+    const provided = req.query.token || req.headers["x-debug-token"];
+    const expected = process.env.DEBUG_TOKEN;
+
+    if (!expected) {
+        return res.status(403).json({ error: "DEBUG_TOKEN não configurado no servidor" });
+    }
+    if (!provided || provided !== expected) {
+        return res.status(403).json({ error: "Token inválido" });
+    }
+    next();
+}
+
+// rota que mostra dados do banco
+app.get("/debug/db", checkDebugToken, async (req, res) => {
+    try {
+        const db = await openDb();
+
+        const items = await db.all("SELECT * FROM items ORDER BY nome");
+        const movements = await db.all(`
+            SELECT m.*, i.nome AS item_nome, i.codigo_barras
+            FROM movements m
+            LEFT JOIN items i ON i.id = m.item_id
+            ORDER BY m.data_hora DESC
+        `);
+
+        return res.json({ ok: true, items, movements });
+    } catch (err) {
+        console.error("Erro na rota /debug/db:", err);
+        return res.status(500).json({ error: "Erro interno" });
+    }
+});
+
+// download opcional do banco
+app.get("/debug/db/download", checkDebugToken, (req, res) => {
+    try {
+        const dbPath = `${__dirname}/../estoque.db`;
+        return res.download(dbPath, "estoque.db");
+    } catch (err) {
+        console.error("Erro ao baixar banco:", err);
+        return res.status(500).json({ error: "Erro interno" });
+    }
+});
+
+// ===== FIM DEBUG =====
+
