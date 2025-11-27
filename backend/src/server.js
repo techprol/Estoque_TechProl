@@ -66,54 +66,6 @@ app.use(express.json({ limit: '5mb' }));
 app.use('/items', itemsRouter);
 app.use('/movements', movementsRouter);
 
-// --- início: debug routes (remova depois de usar) ---
-import path from 'path'; // se já importou no topo, não precisa repetir
-
-// middleware simples para checar token
-function checkDebugToken(req, res, next) {
-  const provided = req.query.token || req.headers['x-debug-token'];
-  const expected = process.env.DEBUG_TOKEN;
-  if (!expected) {
-    // se não houver token configurado, negar por segurança
-    return res.status(403).json({ error: 'DEBUG_TOKEN não configurado no servidor' });
-  }
-  if (!provided || provided !== expected) {
-    return res.status(403).json({ error: 'Token inválido para rota de debug' });
-  }
-  next();
-}
-
-// rota que retorna conteúdo das tabelas items e movements
-app.get('/debug/db', checkDebugToken, async (req, res) => {
-  try {
-    const db = await openDb();
-    const items = await db.all('SELECT * FROM items ORDER BY nome');
-    const movements = await db.all(
-      `SELECT m.id, m.tipo, m.quantidade, m.realizado_por, m.data_hora, m.observacao, i.nome as item_nome, i.codigo_barras
-       FROM movements m
-       LEFT JOIN items i ON i.id = m.item_id
-       ORDER BY m.data_hora DESC`
-    );
-    res.json({ ok: true, items, movements });
-  } catch (err) {
-    console.error('Erro /debug/db:', err);
-    res.status(500).json({ error: 'erro interno' });
-  }
-});
-
-// rota para baixar o arquivo SQLite (opcional — use com cuidado)
-app.get('/debug/db/download', checkDebugToken, (req, res) => {
-  try {
-    // __dirname está definido no topo do seu server.js (fileURLToPath). usamos caminho relativo
-    const dbPath = path.join(__dirname, '..', 'estoque.db');
-    return res.download(dbPath, 'estoque.db');
-  } catch (err) {
-    console.error('Erro /debug/db/download:', err);
-    return res.status(500).json({ error: 'erro interno' });
-  }
-});
-// --- fim: debug routes ---
-
 
 app.get('/', (req, res) => res.json({ ok: true }));
 
@@ -122,12 +74,12 @@ app.listen(PORT, () => console.log(`Backend rodando na porta ${PORT}`));
 
 // ===== DEBUG TEMPORÁRIO =====
 
-// garantir __dirname no modo ES module
+// garante __dirname no modo ES module
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// middleware para validar token
+// middleware: valida token
 function checkDebugToken(req, res, next) {
     const provided = req.query.token || req.headers["x-debug-token"];
     const expected = process.env.DEBUG_TOKEN;
@@ -141,7 +93,7 @@ function checkDebugToken(req, res, next) {
     next();
 }
 
-// rota que mostra dados do banco
+// rota para visualizar dados do banco
 app.get("/debug/db", checkDebugToken, async (req, res) => {
     try {
         const db = await openDb();
@@ -161,7 +113,7 @@ app.get("/debug/db", checkDebugToken, async (req, res) => {
     }
 });
 
-// download opcional do banco
+// rota para download do DB
 app.get("/debug/db/download", checkDebugToken, (req, res) => {
     try {
         const dbPath = `${__dirname}/../estoque.db`;
