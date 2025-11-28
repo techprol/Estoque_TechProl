@@ -122,6 +122,23 @@ app.get('/debug/db/download', checkDebugToken, (req, res) => {
   }
 });
 
+// ===== RESET DO BANCO (DEBUG) =====
+app.post("/debug/reset", checkDebugToken, async (req, res) => {
+    try {
+        const db = await openDb();
+
+        // Limpa as tabelas sem removê-las
+        await db.exec("DELETE FROM movements;");
+        await db.exec("DELETE FROM items;");
+
+        return res.json({ ok: true, message: "Banco de dados limpo com sucesso!" });
+    } catch (err) {
+        console.error("Erro ao resetar banco:", err);
+        return res.status(500).json({ error: "Erro interno" });
+    }
+});
+
+
 // ========== FIM DEBUG ==========
 
 // Iniciar servidor
