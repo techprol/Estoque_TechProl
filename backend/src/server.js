@@ -4,7 +4,7 @@ import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import 'dotenv/config';
 
-import { initDb } from './initDb.js';
+import { initDb } from './initDB.js';
 import { openDb } from './db.js';
 
 await initDb(); // Apenas isso inicia o BD corretamente
