@@ -9,8 +9,8 @@ import { openDb } from './src/db.js';
 
 await initDb(); // Apenas isso inicia o BD corretamente
 
-import itemsRouter from './routes/items.js';
-import movementsRouter from './routes/movements.js';
+import itemsRouter from './src/routes/items.js';
+import movementsRouter from './src/routes/movements.js';
 
 // corrigir dirname
 const __filename = fileURLToPath(import.meta.url);
