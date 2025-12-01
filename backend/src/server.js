@@ -4,13 +4,13 @@ import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import 'dotenv/config';
 
-import { initDb } from './src/initDb.js';
-import { openDb } from './src/db.js';
+import { initDb } from './initDb.js';
+import { openDb } from './db.js';
 
 await initDb(); // Apenas isso inicia o BD corretamente
 
-import itemsRouter from './src/routes/items.js';
-import movementsRouter from './src/routes/movements.js';
+import itemsRouter from './routes/items.js';
+import movementsRouter from './routes/movements.js';
 
 // corrigir dirname
 const __filename = fileURLToPath(import.meta.url);
