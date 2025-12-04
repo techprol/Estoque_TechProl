@@ -1,17 +1,27 @@
-import sqlite3 from 'sqlite3';
-import { open } from 'sqlite';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import pkg from 'pg';
+const { Pool } = pkg;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Render fornece DATABASE_URL no ambiente
+const connectionString = process.env.DATABASE_URL;
 
-// Caminho PERSISTENTE no Render
-const dbPath = process.env.DB_FILE || '/var/data/estoque.db';
+if (!connectionString) {
+    console.error("❌ ERRO: DATABASE_URL não foi definida!");
+}
 
-export async function openDb() {
-    return open({
-        filename: dbPath,
-        driver: sqlite3.Database
-    });
+export const pool = new Pool({
+    connectionString,
+    ssl: {
+        rejectUnauthorized: false // necessário para Render
+    }
+});
+
+// Função para executar queries
+export async function query(text, params) {
+    const client = await pool.connect();
+    try {
+        const res = await client.query(text, params);
+        return res;
+    } finally {
+        client.release();
+    }
 }

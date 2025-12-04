@@ -1,11 +1,10 @@
-import { openDb } from "./db.js";
+import { query } from "./db.js";
 
 export async function initDb() {
-    const db = await openDb();
-
-    await db.exec(`
+    // Criar tabela ITEMS
+    await query(`
         CREATE TABLE IF NOT EXISTS items (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             codigo_barras TEXT UNIQUE,
             nome TEXT,
             categoria TEXT,
@@ -18,16 +17,18 @@ export async function initDb() {
         );
     `);
 
-    await db.exec(`
+    // Criar tabela MOVEMENTS
+    await query(`
         CREATE TABLE IF NOT EXISTS movements (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            item_id INTEGER,
+            id SERIAL PRIMARY KEY,
+            item_id INTEGER REFERENCES items(id),
             tipo TEXT,
             quantidade INTEGER,
             realizado_por TEXT,
             data_hora TEXT,
-            observacao TEXT,
-            FOREIGN KEY(item_id) REFERENCES items(id)
+            observacao TEXT
         );
     `);
+
+    console.log("📦 Banco PostgreSQL inicializado com sucesso!");
 }
