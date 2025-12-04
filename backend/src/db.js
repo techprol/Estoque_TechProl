@@ -15,7 +15,12 @@ export const pool = new Pool({
     }
 });
 
-// Função para executar queries
+// Função padrão openDb() — compatibilidade com o restante do código
+export async function openDb() {
+    return pool;
+}
+
+// Função para executar queries diretas, se precisar usar em algum lugar
 export async function query(text, params) {
     const client = await pool.connect();
     try {

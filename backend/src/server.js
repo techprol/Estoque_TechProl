@@ -7,7 +7,8 @@ import 'dotenv/config';
 import { initDb } from './initDB.js';
 import { openDb } from './db.js';
 
-await initDb(); // Apenas isso inicia o BD corretamente
+// Inicializa tabelas no PostgreSQL
+await initDb();
 
 import itemsRouter from './routes/items.js';
 import movementsRouter from './routes/movements.js';
@@ -37,33 +38,40 @@ function checkDebugToken(req, res, next) {
     next();
 }
 
-// Rota debug
+// 🔍 Rota debug: listar banco
 app.get('/debug/db', checkDebugToken, async (req, res) => {
     const db = await openDb();
 
-    const items = await db.all("SELECT * FROM items ORDER BY nome");
-    const movements = await db.all(`
+    const items = await db.query("SELECT * FROM items ORDER BY nome");
+    const movements = await db.query(`
         SELECT m.*, i.nome AS item_nome, i.codigo_barras
         FROM movements m
         LEFT JOIN items i ON i.id = m.item_id
         ORDER BY m.data_hora DESC
     `);
 
-    res.json({ ok: true, items, movements });
+    res.json({
+        ok: true,
+        items: items.rows,
+        movements: movements.rows
+    });
 });
 
-// Download do DB
-app.get('/debug/db/download', checkDebugToken, (req, res) => {
-    res.download("/var/data/estoque.db", "estoque.db");
-});
-
-// reset DB
+// 🧼 Reset do banco
 app.post('/debug/reset', checkDebugToken, async (req, res) => {
     const db = await openDb();
-    await db.exec("DELETE FROM movements;");
-    await db.exec("DELETE FROM items;");
-    res.json({ ok: true, message: "Banco de dados limpo com sucesso!" });
+
+    await db.query("DELETE FROM movements;");
+    await db.query("DELETE FROM items;");
+
+    res.json({
+        ok: true,
+        message: "Banco de dados limpo com sucesso!"
+    });
 });
+
+// Removido download do arquivo .db — NÃO EXISTE no PostgreSQL
+
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`Backend rodando na porta ${PORT}`));
