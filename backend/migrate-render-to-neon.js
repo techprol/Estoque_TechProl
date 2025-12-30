@@ -9,7 +9,7 @@ const oldPool = new Pool({
 
 // 🟢 BANCO NOVO (Neon)
 const newPool = new Pool({
-  connectionString: process.env.NEW_DATABASE_URL,
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
